@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+	<meta content="utf-8" http-equiv="encoding">
+</head>
+
+<body>
+<canvas id="projectCanvas" width="800" height="600"></canvas>
+
+<script>
+var canvas, canvasContext;
+
+var mouseX = 0;
+var mouseY = 0;
+
+const COMPONENT_W = 100;
+const COMPONENT_H = 50;
+const COMPONENT_COUNT = 8;
+var componentGrid = new Array(COMPONENT_COUNT);
+
+window.onload = function() {
+	canvas = document.getElementById('projectCanvas');
+	canvasContext = canvas.getContext('2d');
+
+	var framesPerSecond = 30;
+	setInterval(updateAll, 1000/framesPerSecond);
+
+	canvas.addEventListener('mousemove', updateMousePos);
+	canvas.addEventListener('click', onClick, false);
+
+	componentReset();
+}
+
+function componentReset() {
+	for(var i=0; i<COMPONENT_COUNT; i++) {
+		// if(Math.random() < 0.5) {
+			componentGrid[i] = true;
+		// } else {
+		// 	componentGrid[i] = false;
+		// }
+	}
+}
+</script>
+
+<script>
+function colorRect(topLeftX,topLeftY, boxWidth,boxHeight, fillColor) {
+	canvasContext.fillStyle = fillColor;
+	canvasContext.fillRect(topLeftX,topLeftY, boxWidth,boxHeight);
+}
+
+function colorCircle(centerX,centerY, radius, fillColor) {
+	canvasContext.fillStyle = fillColor;
+	canvasContext.beginPath();
+	canvasContext.arc(centerX,centerY, 10, 0,Math.PI*2, true);
+	canvasContext.fill();
+}
+
+function colorText(showWords, textX,textY, fillColor) {
+	canvasContext.fillStyle = fillColor;
+	canvasContext.fillText(showWords, textX, textY);
+}
+</script>
+<script>
+
+
+function updateMousePos(evt) {
+	var rect = canvas.getBoundingClientRect();
+	var root = document.documentElement;
+
+	mouseX = evt.clientX - rect.left - root.scrollLeft;
+	mouseY = evt.clientY - rect.top - root.scrollTop;
+}
+
+function updateAll() {
+	drawAll();
+}
+
+function drawAll() {
+	colorRect(0,0, canvas.width,canvas.height, 'gray'); // clear screen
+
+	drawComponents();
+
+	colorText(mouseX+","+mouseY, mouseX, mouseY, 'yellow');
+}
+
+function drawComponents() {
+	for(var i=0;i<COMPONENT_COUNT;i++) {
+		if(componentGrid[i]) {
+			colorRect(COMPONENT_W*i,0, COMPONENT_W-2,COMPONENT_H, 'blue');
+			colorText('Component'+i,COMPONENT_W*i,10,'yellow');
+		}
+	}
+}
+
+function onClick(event){
+	console.log("event");
+}
+
+</script>
