@@ -13,11 +13,54 @@ var canvas, canvasContext;
 
 var mouseX = 0;
 var mouseY = 0;
+var mouseDown = false;
 
 const COMPONENT_W = 100;
 const COMPONENT_H = 50;
-const COMPONENT_COUNT = 8;
-var componentGrid = new Array(COMPONENT_COUNT);
+
+var baseComponent = {
+		"x": 0,
+		"y": 0,
+		"text": 'Base component',
+		"width": COMPONENT_W,
+		"height": COMPONENT_H,
+		"color": 'blue',
+		"checked": false,
+		"clicked": false
+	};
+
+var components = [
+	{
+		"x": 0,
+		"y": 80,
+		"text": 'Component 0',
+		"width": COMPONENT_W,
+		"height": COMPONENT_H,
+		"color": 'blue',
+		"checked": false,
+		"clicked": false
+	},
+	{
+		"x": 100,
+		"y": 80,
+		"text": 'Component 1',
+		"width": COMPONENT_W,
+		"height": COMPONENT_H,
+		"color": 'blue',
+		"checked": false,
+		"clicked": false
+	},
+	{
+		"x": 201,
+		"y": 80,
+		"text": 'Component 2',
+		"width": COMPONENT_W,
+		"height": COMPONENT_H,
+		"color": 'blue',
+		"checked": false,
+		"clicked": false
+	}
+];
 
 window.onload = function() {
 	canvas = document.getElementById('projectCanvas');
@@ -27,20 +70,11 @@ window.onload = function() {
 	setInterval(updateAll, 1000/framesPerSecond);
 
 	canvas.addEventListener('mousemove', updateMousePos);
-	canvas.addEventListener('click', onClick, false);
-
-	componentReset();
+	canvas.addEventListener('click', onClick);
+	canvas.addEventListener('mousedown', onMouseDown, true);
+	canvas.addEventListener('mouseup', onMouseUp, true);
 }
 
-function componentReset() {
-	for(var i=0; i<COMPONENT_COUNT; i++) {
-		// if(Math.random() < 0.5) {
-			componentGrid[i] = true;
-		// } else {
-		// 	componentGrid[i] = false;
-		// }
-	}
-}
 </script>
 
 <script>
@@ -63,15 +97,6 @@ function colorText(showWords, textX,textY, fillColor) {
 </script>
 <script>
 
-
-function updateMousePos(evt) {
-	var rect = canvas.getBoundingClientRect();
-	var root = document.documentElement;
-
-	mouseX = evt.clientX - rect.left - root.scrollLeft;
-	mouseY = evt.clientY - rect.top - root.scrollTop;
-}
-
 function updateAll() {
 	drawAll();
 }
@@ -85,16 +110,87 @@ function drawAll() {
 }
 
 function drawComponents() {
-	for(var i=0;i<COMPONENT_COUNT;i++) {
-		if(componentGrid[i]) {
-			colorRect(COMPONENT_W*i,0, COMPONENT_W-2,COMPONENT_H, 'blue');
-			colorText('Component'+i,COMPONENT_W*i,10,'yellow');
+	for(var i = 0; i < components.length; i++){
+		colorRect(components[i].x,components[i].y, components[i].width-2,components[i].height, components[i].color);
+		colorText(components[i].text,components[i].x,components[i].y+10,'yellow');
+	}
+
+	colorRect(baseComponent.x,baseComponent.y, baseComponent.width-2,baseComponent.height,baseComponent.color);
+	colorText(baseComponent.text,baseComponent.x,baseComponent.y+10,'yellow');
+	
+}
+
+function checkIfClickInComponent(component, mX, mY){
+	
+	if(mX > component.x && mX < (component.width+component.x) &&
+	   mY > component.y && mY < (component.height+component.y)){
+	   	if(!mouseDown){
+			console.log("inside component: " + component.title);
+			component.checked = component.checked ? false : true;
+			component.color = component.checked ? 'red' : 'blue';
+		}
+		return true;
+	}
+
+	return false;
+}
+
+</script>
+
+<script>
+function updateMousePos(evt) {
+	var rect = canvas.getBoundingClientRect();
+	var root = document.documentElement;
+
+	mouseX = evt.clientX - rect.left - root.scrollLeft;
+	mouseY = evt.clientY - rect.top - root.scrollTop;
+
+	if(mouseDown){
+		for(var i = 0; i < components.length; i++){
+			if(checkIfClickInComponent(components[i], mouseX, mouseY)){
+				components[i].x = evt.clientX - components[i].width/2;
+				components[i].y = evt.clientY - components[i].height/2;
+			}
 		}
 	}
 }
 
 function onClick(event){
-	console.log("event");
+	var rect = canvas.getBoundingClientRect();
+	var root = document.documentElement;
+
+	mX = event.clientX - rect.left - root.scrollLeft;
+	mY = event.clientY - rect.top - root.scrollTop;
+
+	for(var i = 0; i < components.length; i++){
+		checkIfClickInComponent(components[i], mX, mY);
+	}
+
+	if(baseComponent.checked){
+		components.push(
+			{
+				"x": event.clientX - COMPONENT_W/2,
+				"y": event.clientY - COMPONENT_H/2,
+				"text": 'Component '+components.length,
+				"width": COMPONENT_W,
+				"height": COMPONENT_H,
+				"color": 'blue',
+				"checked": false,
+				"clicked": false
+			}
+		);
+	}
+
+	checkIfClickInComponent(baseComponent, mX, mY);
 }
 
+function onMouseDown(event){
+	console.log("mouse press");
+	mouseDown = true;
+}
+
+function onMouseUp(event){
+	console.log("released mouse");
+	mouseDown = false;
+}
 </script>
